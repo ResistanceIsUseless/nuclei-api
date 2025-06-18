@@ -1,65 +1,78 @@
 package queue
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/resistanceisuseless/nuclei-api/internal/models"
 )
 
-// Queue manages the scan request queue
+// Queue manages scan requests
 type Queue struct {
-	mu       sync.RWMutex
 	requests map[string]*models.ScanRequest
-	maxSize  int
+	mu       sync.RWMutex
 }
 
-// NewQueue creates a new queue with the specified maximum size
-func NewQueue(maxSize int) *Queue {
+// NewQueue creates a new queue
+func NewQueue() *Queue {
 	return &Queue{
 		requests: make(map[string]*models.ScanRequest),
-		maxSize:  maxSize,
 	}
 }
 
 // Add adds a scan request to the queue
-func (q *Queue) Add(request *models.ScanRequest) bool {
+func (q *Queue) Add(request *models.ScanRequest) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
-	if len(q.requests) >= q.maxSize {
-		return false
+	if _, exists := q.requests[request.ID.String()]; exists {
+		return errors.New("scan request already exists")
 	}
 
 	q.requests[request.ID.String()] = request
-	return true
+	return nil
 }
 
 // Get retrieves a scan request by ID
-func (q *Queue) Get(id string) (*models.ScanRequest, bool) {
+func (q *Queue) Get(id string) (*models.ScanRequest, error) {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
 
 	request, exists := q.requests[id]
-	return request, exists
+	if !exists {
+		return nil, errors.New("scan request not found")
+	}
+
+	return request, nil
 }
 
-// Update updates a scan request in the queue
-func (q *Queue) Update(request *models.ScanRequest) {
+// Update updates a scan request
+func (q *Queue) Update(request *models.ScanRequest) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
+	if _, exists := q.requests[request.ID.String()]; !exists {
+		return errors.New("scan request not found")
+	}
+
 	q.requests[request.ID.String()] = request
+	return nil
 }
 
 // Remove removes a scan request from the queue
-func (q *Queue) Remove(id string) {
+func (q *Queue) Remove(id string) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
+	if _, exists := q.requests[id]; !exists {
+		return errors.New("scan request not found")
+	}
+
 	delete(q.requests, id)
+	return nil
 }
 
-// List returns all scan requests in the queue
+// List returns all scan requests
 func (q *Queue) List() []*models.ScanRequest {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
@@ -68,5 +81,6 @@ func (q *Queue) List() []*models.ScanRequest {
 	for _, request := range q.requests {
 		requests = append(requests, request)
 	}
+
 	return requests
 }
