@@ -57,6 +57,7 @@ func (s *ScanService) executeScan(ctx context.Context, request *models.ScanReque
 
 	var resultCount int32
 	var vulnsFound int32
+	var maxTemplatesSeen int32
 
 	callback := func(result *output.ResultEvent) {
 		if result == nil {
@@ -70,15 +71,36 @@ func (s *ScanService) executeScan(ctx context.Context, request *models.ScanReque
 				break
 			}
 		}
-		request.Progress.TemplatesRun = int(resultCount)
+
+		// Update max templates seen
+		currentCount := atomic.LoadInt32(&resultCount)
+		if currentCount > atomic.LoadInt32(&maxTemplatesSeen) {
+			atomic.StoreInt32(&maxTemplatesSeen, currentCount)
+		}
+
+		// Calculate progress percentage based on templates run vs max seen
+		templatesRun := int(currentCount)
+		maxTemplates := int(atomic.LoadInt32(&maxTemplatesSeen))
+		percentage := 0.0
+		if maxTemplates > 0 {
+			percentage = float64(templatesRun) / float64(maxTemplates) * 100
+		}
+
+		request.Progress.TemplatesRun = templatesRun
+		request.Progress.TotalTemplates = maxTemplates
 		request.Progress.VulnsFound = int(vulnsFound)
+		request.Progress.Percentage = percentage
 		request.Progress.LastUpdate = time.Now()
 		s.queue.Update(request)
 	}
 
 	err = engine.ExecuteCallbackWithCtx(ctx, callback)
+
+	// Final update
 	request.Progress.TemplatesRun = int(resultCount)
+	request.Progress.TotalTemplates = int(maxTemplatesSeen)
 	request.Progress.VulnsFound = int(vulnsFound)
+	request.Progress.Percentage = 100.0 // Set to 100% when complete
 	request.Progress.LastUpdate = time.Now()
 	s.queue.Update(request)
 	return err
