@@ -54,7 +54,7 @@ func printStatus(q *queue.Queue) {
 	fmt.Println("\nPress Ctrl+C to stop")
 }
 
-func main() {
+func runServer() error {
 	// Create a new queue
 	q := queue.NewQueue()
 
@@ -136,4 +136,12 @@ func main() {
 	<-quit
 
 	fmt.Println("\nShutting down server...")
+	return nil
+}
+
+func main() {
+	if err := runServer(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
 }

@@ -15,25 +15,18 @@ This document tracks the progress of planned enhancements to the Nuclei API.
   - Added background processing of scans
   - Added queue management endpoints
 
-### In Progress
-- [ ] 📊 Progress Tracking: Real-time scan progress and statistics
-  - [ ] Add progress percentage tracking
-  - [ ] Add scan statistics (templates run, vulnerabilities found)
-  - [ ] Add real-time progress updates via WebSocket
+- [x] 📊 Progress Tracking: Real-time scan progress and statistics
+  - [x] Add progress percentage tracking
+  - [x] Add scan statistics (templates run, vulnerabilities found)
+  - [x] Add real-time progress updates via WebSocket
+
+- [x] 🔄 TUI Dashboard: View server status and scan progress
+  - [x] Design TUI layout
+  - [x] Implement server status dashboard
+  - [x] Add real-time scan progress visualization
+  - [x] Add queue management interface
 
 ### Planned Features
-- [ ] 🔄 Optional TUI to see the status of the server and progress of each scan
-  - [ ] Design TUI layout
-  - [ ] Implement server status dashboard
-  - [ ] Add real-time scan progress visualization
-  - [ ] Add queue management interface
-
-- [ ] 🔄 Queue Management: View and manage queued scans
-  - [ ] Add queue status endpoint
-  - [ ] Add ability to cancel queued scans
-  - [ ] Add queue statistics
-  - [ ] Add queue management UI
-
 - [ ] 🪝 Webhooks: Automatic result delivery via callbacks
   - [ ] Add webhook configuration
   - [ ] Implement webhook delivery system
@@ -64,12 +57,22 @@ This document tracks the progress of planned enhancements to the Nuclei API.
      - Background processing
      - Status tracking and timestamps
 
+2. Progress Tracking and TUI Dashboard
+   - Branch: `feature/progress-tracking`
+   - Status: ✅ Completed
+   - Key Components:
+     - Real-time progress updates
+     - Statistics collection
+     - WebSocket support for live updates
+     - Interactive TUI dashboard
+     - Queue status visualization
+
 ### Next Steps
-1. Progress Tracking
-   - Create new branch: `feature/progress-tracking`
-   - Implement real-time progress updates
-   - Add statistics collection
-   - Add WebSocket support for live updates
+1. Webhook Integration
+   - Create new branch: `feature/webhooks`
+   - Implement webhook configuration
+   - Add secure delivery system
+   - Add retry mechanism
 
 ## Technical Debt
 - Add proper error handling and logging
